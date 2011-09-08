@@ -151,7 +151,7 @@ parser.add_option('-c', dest="clear", action='store_true', default=False, help='
 
 parser.add_option('-u', dest="update", help='Updates a designated task as completed. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -u Main 1. This command would mark the first message on the Main list as completed.', action='store', metavar='<ListName> <TaskNumber>', nargs=2)
 
-parser.add_option('-d', help='Deletes a designated task. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -d Main 1. This command would delete the first message from the Main list.', action='store', metavar='<ListName> <TaskNumber>', type="string", dest="delTask", nargs=2)
+parser.add_option('-d', dest="delTask", help='Deletes a designated task. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -d Main 1. This command would delete the first message from the Main list.', action='store', metavar='<ListName> <TaskNumber>', type="string", nargs=2)
 
 
 
@@ -166,7 +166,7 @@ elif opts.clear == True:
 	clearTask()
 elif opts.update != None:
 	updateTask(opts.update)
-else: 
+elif opts.delTask != None: 
 	delTask(opts.delTask)
 
 
