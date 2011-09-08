@@ -18,5 +18,5 @@ Clear completed tasks: `myTasks.py -c`
 
 Listing tasks assigns a number to each task. It's this number that's needed to update or delete a task, so list them first.
 
-For myself, I added an alias to my .bash_profile file pointing to the script named "tasks". So, listing tasks is `tasks -l`. 
+For myself, I added an alias to my `.bash_profile` file pointing to the script named "tasks". So, listing tasks is `tasks -l`. 
 
