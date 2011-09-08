@@ -10,11 +10,11 @@ myTasks uses optparse to manage command line args, and should work with Python 2
 
 For help or reminders on usage, use the `-h` option.  
 
-List tasks: `myTasks.py -l`
-New task: `myTasks.py -n <ListName> <"Task"> <DueDate>`
-Update task: `myTasks.py -u <ListName> <TaskNumber>`
-Delete task: `myTasks.py -d <ListName> <TaskNumber>` 
-Clear completed tasks: `myTasks.py -c`
+List tasks: `myTasks.py -l`  
+New task: `myTasks.py -n <ListName> <"Task"> <DueDate>`  
+Update task: `myTasks.py -u <ListName> <TaskNumber>`  
+Delete task: `myTasks.py -d <ListName> <TaskNumber>`   
+Clear completed tasks: `myTasks.py -c`  
 
 Listing tasks assigns a number to each task. It's this number that's needed to update or delete a task, so list them first.
 
