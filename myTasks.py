@@ -23,20 +23,21 @@ def listTasks():
 		tasks = service.tasks().list(tasklist=listID).execute()
 		n=1
 		for task in tasks['items']:
-			dueDate=''
-			if task['title'] == None: pass
+			if task['title'] == '': pass
 			else:
+				dueDate='No date.'
 				if 'due' in task: 
-					fullDueDate=str(task['due'])
-					dueDate=fullDueDate[:10]
-					if 'parent' in task.keys():
-						task['taskNum'] = n
-						print '       '+str(task['taskNum'])+'. '+task['title']+' : '+dueDate
-						n+=1
-					else: 
-						task['taskNum'] = n
-						print '    '+str(n)+'. '+task['title']+' : '+dueDate
-						n += 1					
+						fullDueDate=str(task['due'])
+						dueDate=fullDueDate[:10]
+						
+				if 'parent' in task.keys():
+					task['taskNum'] = n					
+					print '       '+str(task['taskNum'])+'. '+task['title']+' : '+dueDate
+					n+=1
+				else: 
+					task['taskNum'] = n
+					print '    '+str(n)+'. '+task['title']+' : '+dueDate
+					n += 1					
 		print
 
 def newTask(opts):
