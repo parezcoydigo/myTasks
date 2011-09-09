@@ -31,12 +31,14 @@ def listTasks():
 		n=1
 		for task in tasks['items']:
 			dueDate=''
-			if 'due' in task: 
-				fullDueDate=str(task['due'])
-				dueDate=fullDueDate[:10] 
-			task['taskNum'] = n
-			print '    '+str(n)+'. '+task['title']+' : '+dueDate
-			n += 1
+			if task['title'] == None: pass
+			else:
+				if 'due' in task: 
+					fullDueDate=str(task['due'])
+					dueDate=fullDueDate[:10] 
+					task['taskNum'] = n
+					print '    '+str(n)+'. '+task['title']+' : '+dueDate
+					n += 1
 		print
 
 def newTask(opts):
