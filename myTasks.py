@@ -1,13 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-myTasks
-v0.2
-
-Created by Chad Black, 09-07-2011.
-"""
-
 from optparse import OptionParser
 
 import gflags
@@ -35,10 +28,15 @@ def listTasks():
 			else:
 				if 'due' in task: 
 					fullDueDate=str(task['due'])
-					dueDate=fullDueDate[:10] 
-					task['taskNum'] = n
-					print '    '+str(n)+'. '+task['title']+' : '+dueDate
-					n += 1
+					dueDate=fullDueDate[:10]
+					if 'parent' in task.keys():
+						task['taskNum'] = n
+						print '       '+str(task['taskNum'])+'. '+task['title']+' : '+dueDate
+						n+=1
+					else: 
+						task['taskNum'] = n
+						print '    '+str(n)+'. '+task['title']+' : '+dueDate
+						n += 1					
 		print
 
 def newTask(opts):
@@ -116,8 +114,8 @@ FLAGS = gflags.FLAGS
 # The client_id and client_secret are copied from the API Access tab on
 # the Google APIs Console
 FLOW = OAuth2WebServerFlow(
-    client_id='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-    client_secret=keyring.get_password('XXXXXXX', 'XXXXXXX'),
+    client_id='653996198112.apps.googleusercontent.com',
+    client_secret=keyring.get_password('tasksClient', 'chadblack1'),
     scope='https://www.googleapis.com/auth/tasks',
     user_agent='myTasks/v1')
 
@@ -153,7 +151,7 @@ parser.add_option('-c', dest="clear", action='store_true', default=False, help='
 
 parser.add_option('-u', dest="update", help='Updates a designated task as completed. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -u Main 1. This command would mark the first message on the Main list as completed.', action='store', metavar='<ListName> <TaskNumber>', nargs=2)
 
-parser.add_option('-d', dest="delTask", help='Deletes a designated task. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -d Main 1. This command would delete the first message from the Main list.', action='store', metavar='<ListName> <TaskNumber>', type="string", nargs=2)
+parser.add_option('-d', dest="delTask", help='Deletes a designated task. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -d Main 1. This command would delete the first message from the Main list.', action='store', metavar='<ListName> <TaskNumber>', type="string",  nargs=2)
 
 
 
@@ -170,6 +168,8 @@ elif opts.update != None:
 	updateTask(opts.update)
 elif opts.delTask != None: 
 	delTask(opts.delTask)
+else:
+	print "Dude. Can't do that."
 
 
 
