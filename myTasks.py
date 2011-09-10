@@ -103,7 +103,7 @@ def updateTask(opts):
 	chooseTask = service.tasks().get(tasklist=listID, task=taskID).execute()
 	chooseTask['status'] = 'completed'
 	markIt = service.tasks().update(tasklist=listID, task=chooseTask['id'], body=chooseTask).execute()
-	print "completed"
+	print "Completed"
 
 FLAGS = gflags.FLAGS
 
