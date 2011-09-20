@@ -4,7 +4,7 @@ myTasks is a python program for interacting with Google Tasks through the comman
 
 # Requirements
 
-myTasks uses optparse to manage command line args, and should work with Python 2.3.x or later. It requires the `google_api_python_client` [package](http://code.google.com/p/google-api-python-client/). As written, it also uses `keyring` to manage keys. For more information on initial authorization of the client, see this [post](http://code.google.com/p/google-api-python-client/) on my blog.
+myTasks uses optparse to manage command line args, and should work with Python 2.3.x or later. It requires the `google_api_python_client` [package](http://code.google.com/p/google-api-python-client/). As written, it also uses `keyring` to manage keys. For more information on initial authorization of the client, see this [post]() on my blog.
 
 # Usage
 
