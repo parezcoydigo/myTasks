@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from optparse import OptionParser
+import argparse
 
 import gflags
 import httplib2
@@ -14,39 +14,71 @@ from oauth2client.file import Storage
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.tools import run
 
+def tasks(listID):
+	tasks = service.tasks().list(tasklist=listID).execute()
+	n=1
+	for task in tasks['items']:
+		if task['title'] == '': pass
+		else:
+			dueDate='No date.'
+			if 'due' in task: 
+					fullDueDate=str(task['due'])
+					dueDate=fullDueDate[:10]
+				
+			if 'parent' in task.keys():
+				task['taskNum'] = n					
+				print '       '+str(task['taskNum'])+'. '+task['title']+' : '+dueDate
+				n+=1
+			else: 
+				task['taskNum'] = n
+				print '    '+str(n)+'. '+task['title']+' : '+dueDate
+				n += 1	
 
-def listTasks():
-	tasklists = service.tasklists().list().execute()
-	for tasklist in tasklists['items']:
-		print tasklist['title']
-		listID=tasklist['id']
-		tasks = service.tasks().list(tasklist=listID).execute()
-		n=1
-		for task in tasks['items']:
-			if task['title'] == '': pass
+def listTasks(listName, tasklists):
+	if listName == []:
+		for tasklist in tasklists['items']:
+			print tasklist['title']
+			listID=tasklist['id']
+			tasks(listID)					
+			print
+	else:
+		for tasklist in tasklists['items']:
+			if tasklist['title'] != listName[0]: pass
 			else:
-				dueDate='No date.'
-				if 'due' in task: 
-						fullDueDate=str(task['due'])
-						dueDate=fullDueDate[:10]
-						
-				if 'parent' in task.keys():
-					task['taskNum'] = n					
-					print '       '+str(task['taskNum'])+'. '+task['title']+' : '+dueDate
-					n+=1
-				else: 
-					task['taskNum'] = n
-					print '    '+str(n)+'. '+task['title']+' : '+dueDate
-					n += 1					
-		print
+				print tasklist['title']
+				listID=tasklist['id']
+				tasks(listID)
+		
 
-def newTask(opts):
+def renameList(opts, tasklists):
+	origList = opts[0]
+	newList = opts[1]
+	for tasklist in tasklists['items']:
+		if tasklist['title'] == origList:
+			tasklist['title'] = newList
+			result = service.tasklists().update(tasklist=tasklist['id'], body=tasklist).execute()
+			print origList+' renamed '+newList
+			break
+
+def delList(opts, tasklists):
+	listName = opts
+	for tasklist in tasklists['items']:
+		if tasklist['title'] == listName[0]:
+			service.tasklists().delete(tasklist=tasklist['id']).execute()
+			print listName, " deleted!"
+			break		
+
+def newTask(opts, tasklists):
 	listName = opts[0]
-	task = {
-	 	'title': opts[1], 
-	 	'due': opts[2]+'T12:00:00.000Z',
-		}					
-	tasklists = service.tasklists().list().execute()
+	if len(opts) > 2:
+		task = {
+	 		'title': opts[1], 
+	 		'due': opts[2]+'T12:00:00.000Z',
+			}
+	else:
+		task = {
+			'title': opts[1]
+			}					
 	listID = None
 	for tasklist in tasklists['items']:
 		if listName == tasklist['title']:
@@ -61,25 +93,21 @@ def newTask(opts):
 	newTask = service.tasks().insert(tasklist=listID, body=task).execute()
 	print 'Completed.'
 
-def clearTask():
-	tasklists = service.tasklists().list().execute()
+def clearTask(tasklists):
 	for tasklist in tasklists['items']:
 		listID = tasklist['id']
 		service.tasks().clear(tasklist=listID, body='').execute()
 	print 'Cleared.'
 
-def delTask(opts):
+def delTask(opts, tasklists):
 	listName= opts[0]
 	taskNumber = int(opts[1])
-
-# match list off of list name		
-	tasklists=service.tasklists().list().execute()
+    # match list off of list name		
 	for tasklist in tasklists['items']:
 		if listName == tasklist['title']:
 			listID=tasklist['id']
-			break
-			
-# select and delete task
+			break			
+    # select and delete task
 	tasks = service.tasks().list(tasklist=listID).execute()
 	newList = tasks['items']
 	selectTask = newList[taskNumber-1]
@@ -87,10 +115,9 @@ def delTask(opts):
 	service.tasks().delete(tasklist=listID, task=taskID).execute()
 	print "Completed."
 
-def updateTask(opts):
+def updateTask(opts, tasklists):
 	listName = opts[0]
 	taskNumber = int(opts[1])		
-	tasklists=service.tasklists().list().execute()
 	for tasklist in tasklists['items']:
 		if listName == tasklist['title']:
 			listID=tasklist['id']
@@ -98,12 +125,13 @@ def updateTask(opts):
 	tasks = service.tasks().list(tasklist=listID).execute()
 	newList = tasks['items']
 	selectTask = newList[taskNumber-1]
-	taskID = selectTask['id']
-	
+	taskID = selectTask['id']	
 	chooseTask = service.tasks().get(tasklist=listID, task=taskID).execute()
 	chooseTask['status'] = 'completed'
 	markIt = service.tasks().update(tasklist=listID, task=chooseTask['id'], body=chooseTask).execute()
 	print "Completed"
+
+
 
 FLAGS = gflags.FLAGS
 
@@ -115,8 +143,8 @@ FLAGS = gflags.FLAGS
 # The client_id and client_secret are copied from the API Access tab on
 # the Google APIs Console
 FLOW = OAuth2WebServerFlow(
-    client_id='653996198112.apps.googleusercontent.com',
-    client_secret=keyring.get_password('tasksClient', 'chadblack1'),
+    client_id='XXXXXXXXXXXXXXXXXXXXXXXXX', 
+    client_secret=keyring.get_password('KEYNAME', 'USER'), 
     scope='https://www.googleapis.com/auth/tasks',
     user_agent='myTasks/v1')
 
@@ -126,7 +154,9 @@ FLAGS.auth_local_webserver = False
 # If the Credentials don't exist or are invalid, run through the native client
 # flow. The Storage object will ensure that if successful the good
 # Credentials will get written back to a file.
-storage = Storage('tasks.dat')
+
+taskStore = "/PATH/TO/YOUR/tasks.dat"
+storage = Storage(taskStore)
 credentials = storage.get()
 if credentials is None or credentials.invalid == True:
   credentials = run(FLOW, storage)
@@ -142,35 +172,41 @@ http = credentials.authorize(http)
 service = build(serviceName='tasks', version='v1', http=http,
        developerKey=keyring.get_password('googleDevKey', 'chadblack1'))
 
-parser = OptionParser(usage="usage: tasks [option] arg1 arg2 arg3", version="myTasks v0.2")
+parser = argparse.ArgumentParser(usage="tasks [option] arg1 arg2 arg3", prog="myTasks v0.3")
 
-parser.add_option('-l', dest="list", action='store_true', default=False, help='Lists all tasks. Takes no arguments')
+parser.add_argument('-l', dest="tList", action='store', nargs="*", help='Lists tasks. For a sinlge list, pass the list name.')
 
-parser.add_option('-n', dest="new", help='Adds new task. Pass the name of the task list and the new task as arguments in double quotes. For example: tasks -n Main "Add this task to the Main list."', action='store', metavar='<ListName> <"Task"> <YYYY-MM-DD>', type='string', nargs=3)
+parser.add_argument('-n', dest="new", help='Adds new task. Pass the name of the task list and the new task as arguments in double quotes. For example: tasks -n Main "Add this task to the Main list."', action='store', metavar='<ListName> <"Task"> <YYYY-MM-DD>', nargs="*")
 
-parser.add_option('-c', dest="clear", action='store_true', default=False, help='Clears completed tasks from your lists. Takes no arguments.')
+parser.add_argument('-c', dest="clear", action='store_true', default=False, help='Clears completed tasks from your lists. Takes no arguments.')
 
-parser.add_option('-u', dest="update", help='Updates a designated task as completed. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -u Main 1. This command would mark the first message on the Main list as completed.', action='store', metavar='<ListName> <TaskNumber>', nargs=2)
+parser.add_argument('-u', dest="update", help='Updates a designated task as completed. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -u Main 1. This command would mark the first message on the Main list as completed.', action='store', metavar='<ListName> <TaskNumber>', nargs="*")
 
-parser.add_option('-d', dest="delTask", help='Deletes a designated task. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -d Main 1. This command would delete the first message from the Main list.', action='store', metavar='<ListName> <TaskNumber>', type="string",  nargs=2)
+parser.add_argument('-d', dest="delTask", help='Deletes a designated task. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -d Main 1. This command would delete the first message from the Main list.', action='store', metavar='<ListName> <TaskNumber>', nargs="*")
+
+parser.add_argument('-R', dest="newList", help='Renames a task list. Pass the old list name and the new list name. For example: tasks -R Main Home. This command would rename the Main list as the Home list.', action='store', metavar='<old ListName> <new ListName>', nargs=2)
+
+parser.add_argument('-D', dest="delList", help='Delete a task list. Pass the targeted list name. For example: tasks -D Main. This command woudl delete the Main task list.', action='store', metavar='<target listName>', nargs=1)
 
 
+tasklists = service.tasklists().list().execute()
+opts = parser.parse_args()
 
-(opts, args) = parser.parse_args()
 
-
-if opts.list == True: 
-	listTasks()
-elif opts.new != None:
-	newTask(opts.new)
+if opts.new != None:
+	newTask(opts.new, tasklists)
 elif opts.clear == True:
-	clearTask()
+	clearTask(tasklists)
 elif opts.update != None:
-	updateTask(opts.update)
+	updateTask(opts.update, tasklists)
 elif opts.delTask != None: 
-	delTask(opts.delTask)
-else:
-	print "Dude. Can't do that."
+	delTask(opts.delTask, tasklists)
+elif opts.newList != None:
+	renameList(opts.newList, tasklists)
+elif opts.delList != None:
+	delList(opts.delList, tasklists)
+elif opts.tList != None: 
+	listTasks(opts.tList, tasklists)
 
 
 
