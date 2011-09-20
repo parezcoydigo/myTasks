@@ -4,10 +4,9 @@ myTasks is a python script for interacting with Google Tasks through the command
 
 # Requirements
 
-<<<<<<< HEAD
-myTasks uses optparse to manage command line args, and should work with Python 2.3.x or later. It requires the `google_api_python_client` [package](http://code.google.com/p/google-api-python-client/). As written, it also uses `keyring` to manage keys. For more information on initial authorization of the client, see this [post]() on my blog.
-=======
-## Dependencies ##
+### Dependencies  
+
+myTasks uses optparse to manage command line args, and should work with Python 2.3.x or later. It requires the `google_api_python_client` [package](http://code.google.com/p/google-api-python-client/). As written, it also uses `keyring` to manage keys. For more information on initial authorization of the client, see this [post]() on my blog. ## Dependencies ##
 
 * myTasks uses `argparse` to manage command line args. For Python versions prior to 2.7, the [`argparse` module](http://pypi.python.org/pypi/argparse) must be installed with either pip or easy_install: `pip install argparse` or `easy_install argparse`.  
 
@@ -18,7 +17,7 @@ myTasks uses optparse to manage command line args, and should work with Python 2
 `>>> keyring.set_password('application name', 'username', 'password')`
 where password = your client_secret.  
  
-## Authorization ##
+### Authorization  
 
 As with other applications that require authentication to interact with google services, your Tasks app needs to be authorized to make requests. So, for initial set-up there are two things you must do.  
 
@@ -29,8 +28,6 @@ As with other applications that require authentication to interact with google s
 3. Authenticate the application the first time you run the script from the command line. There will be a dialogue to approve access to your Tasks data. Paste the link provided into your browser, accept the access to your Tasks, then paste the provided key back into the terminal when asked for it.  
 
 
->>>>>>> Rewritten for v0.3.
-
 # Usage
 
 For help or reminders on usage, use the `-h` option.  
@@ -38,31 +35,39 @@ For help or reminders on usage, use the `-h` option.
 usage: tasks [option] arg1 arg2 arg3
 
 optional arguments:  
-  -h, --help            show this help message and exit  
+  `-h`, --help            show this help message and exit  
 
-  -l [optional ListName]  
-                        Lists tasks. For a single list, pass the list name.  
+  `-l [optional ListName]`  
 
-  -n [ListName "Task" YYYY-MM-DD]
-                        Adds new task. Pass the name of the task list and the new task as arguments in double quotes. For example:  tasks -n Main "Add this task to the Main list."
+*  Lists tasks. For a single list, pass the list name.  
 
-  -c                    
-						Clears completed tasks from your lists. Takes no arguments.  
+  `-n [ListName "Task" YYYY-MM-DD]`  
 
-  -u [ListName TaskNumber]  
-                        Updates a designated task as completed. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -u Main 1. This command would mark the first message on the Main list as completed.  
+*  Adds new task. Pass the name of the task list and the new task as arguments in double quotes. For example:  `tasks -n Main "Add this task to the Main list."`
 
-  -d [ListName TaskNumber]    
-                        Deletes a designated task. Pass the name of the list
-                        and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -d Main 1. This command would delete the first message from the Main list.   
+  `-c`                    
 
-  -R [old ListName new ListName]    
-                        Renames a task list. Pass the old list name and the
-                        new list name. For example: tasks -R Main Home. This
+*  Clears completed tasks from your lists. Takes no arguments.  
+
+  `-u [ListName TaskNumber]`  
+   
+
+*  Updates a designated task as completed. Pass the name of the list and the number of the task. The number is available by first listing tasks with the `-l` command. For example: tasks -u Main 1. This command would mark the first message on the Main list as completed.  
+
+  `-d [ListName TaskNumber]`    
+   
+*  Deletes a designated task. Pass the name of the list
+                       and the number of the task. The number is available by first listing tasks with the `-l` command. For example: tasks -d Main 1. This command would delete the first message from the Main list.   
+
+  `-R [old ListName new ListName]`    
+
+* Renames a task list. Pass the old list name and the
+                        new list name. For example: `tasks -R Main Home`. This
                         command would rename the Main list as the Home list.  
 
-  -D [target listName]   
-						Delete a task list. Pass the targeted list name. For example: tasks -D Main. This command would delete the Main task list.  
+  `-D [target listName]`   
+		
+*   Delete a task list. Pass the targeted list name. For example: `tasks -D Main`. This command would delete the Main task list.  
 
 
 For myself, I added an alias to my `.bash_profile` file pointing to the script named "tasks". So, listing tasks is `tasks -l`. 
