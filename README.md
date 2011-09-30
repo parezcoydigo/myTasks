@@ -41,7 +41,7 @@ optional arguments:
 
   `-n [ListName "Task" YYYY-MM-DD]`  
 
-*  Adds new task. Pass the name of the task list and the new task as arguments in double quotes. For example:  `tasks -n Main "Add this task to the Main list."`
+*  Adds new task. Pass the name of the task list and the new task as arguments in double quotes. For example:  `tasks -n Main "My new task for the Main list."` There are several options for due dates when adding a new task. A due date can be omitted. To specify a specific date, add with iso format YYYY-MM-DD. For tasks with close due dates, you can enter `today`, `tomorrow`, `nextWeek`, or `nextMonth`, which will be converted to iso format dates. Or, for tasks due in the next week, the weekday name can be entered as `mon` or `monday` or `Monday`. Weekday designations are also converted to iso format dates.
 
   `-c`                    
 
