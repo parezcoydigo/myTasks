@@ -7,6 +7,8 @@ import gflags
 import httplib2
 import keyring
 import sys
+import datetime
+
 
 
 from apiclient.discovery import build
@@ -14,25 +16,60 @@ from oauth2client.file import Storage
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.tools import run
 
+today = datetime.date.today()
+
+weekdays = {'mon':0, 'tue':1, 'wed':2, 'thu':3, 'fri':4, 'sat':5, 'sun':6, 'monday' : 0, 'tuesday':1, 'wednesday':2,'thursday':3, 'friday':4, 'saturday':5, 'sunday':6 }
+
+
+def today(today):
+	return today
+
+def tomorrow(today):
+	return today + datetime.timedelta(days=1)
+
+def nextWeek(today):
+	today + datetime.timedelta(days=7)
+
+def nextMonth(today):
+	return today + datetime.timedelta(days=30)	
+
+def dueDate(due):
+	today = datetime.date.today()
+	due = due.lower()
+	print today.isoweekday()
+	if weekdays.has_key(due) and weekdays[due] > today.isoweekday(): 
+		diff = today.isoweekday() - weekdays[due]
+		dueDate = (today + datetime.timedelta(diff)).isoformat()
+	elif weekdays.has_key(due) and weekdays[due] <= today.isoweekday():
+		diff = 6 - today.isoweekday()
+		dueDate = (today + datetime.timedelta(diff)).isoformat()
+	elif due in relDays:
+		dueDate = due(today).isoformat()
+	else: 
+		dueDate = due
+	return dueDate+'T12:00:00.000Z'
+
 def tasks(listID):
 	tasks = service.tasks().list(tasklist=listID).execute()
 	n=1
-	for task in tasks['items']:
-		if task['title'] == '': pass
-		else:
-			dueDate='No date.'
-			if 'due' in task: 
+	try: 
+		for task in tasks['items']:
+			if task['title'] == '': pass
+			else:
+				dueDate='No date.'
+				if 'due' in task: 
 					fullDueDate=str(task['due'])
 					dueDate=fullDueDate[:10]
 				
-			if 'parent' in task.keys():
-				task['taskNum'] = n					
-				print '       '+str(task['taskNum'])+'. '+task['title']+' : '+dueDate
-				n+=1
-			else: 
-				task['taskNum'] = n
-				print '    '+str(n)+'. '+task['title']+' : '+dueDate
-				n += 1	
+				if 'parent' in task.keys():
+					task['taskNum'] = n					
+					print '       '+str(task['taskNum'])+'. '+task['title']+' : '+dueDate
+					n+=1
+				else: 
+					task['taskNum'] = n
+					print '    '+str(n)+'. '+task['title']+' : '+dueDate
+					n += 1
+	except KeyError: print '    No tasks.'
 
 def listTasks(listName, tasklists):
 	if listName == []:
@@ -70,10 +107,12 @@ def delList(opts, tasklists):
 
 def newTask(opts, tasklists):
 	listName = opts[0]
+#	dueDate = ''
 	if len(opts) > 2:
+		convertDue = dueDate(opts[2])
 		task = {
 	 		'title': opts[1], 
-	 		'due': opts[2]+'T12:00:00.000Z',
+	 		'due': convertDue,
 			}
 	else:
 		task = {
@@ -102,7 +141,8 @@ def clearTask(tasklists):
 def delTask(opts, tasklists):
 	listName= opts[0]
 	taskNumber = int(opts[1])
-    # match list off of list name		
+    # match list off of list name
+	listID = None
 	for tasklist in tasklists['items']:
 		if listName == tasklist['title']:
 			listID=tasklist['id']
@@ -132,6 +172,7 @@ def updateTask(opts, tasklists):
 	print "Completed"
 
 
+relDays = [today, tomorrow, nextWeek, nextMonth]
 
 FLAGS = gflags.FLAGS
 
@@ -143,8 +184,8 @@ FLAGS = gflags.FLAGS
 # The client_id and client_secret are copied from the API Access tab on
 # the Google APIs Console
 FLOW = OAuth2WebServerFlow(
-    client_id='XXXXXXXXXXXXXXXXXXXXXXXXX', 
-    client_secret=keyring.get_password('KEYNAME', 'USER'), 
+    client_id='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    client_secret=keyring.get_password('XXXXXXX', 'XXXXXXXX'),
     scope='https://www.googleapis.com/auth/tasks',
     user_agent='myTasks/v1')
 
@@ -155,7 +196,7 @@ FLAGS.auth_local_webserver = False
 # flow. The Storage object will ensure that if successful the good
 # Credentials will get written back to a file.
 
-taskStore = "/PATH/TO/YOUR/tasks.dat"
+taskStore = "/PATH/TO/tasks.dat"
 storage = Storage(taskStore)
 credentials = storage.get()
 if credentials is None or credentials.invalid == True:
@@ -163,30 +204,46 @@ if credentials is None or credentials.invalid == True:
 
 # Create an httplib2.Http object to handle our HTTP requests and authorize it
 # with our good Credentials.
-http = httplib2.Http()
+http = httplib2.Http(cache=".cache")
 http = credentials.authorize(http)
+
 
 # Build a service object for interacting with the API. Visit
 # the Google APIs Console
 # to get a developerKey for your own application.
 service = build(serviceName='tasks', version='v1', http=http,
-       developerKey=keyring.get_password('googleDevKey', 'chadblack1'))
+       developerKey=keyring.get_password('XXXXXXXXX', 'XXXXXXXXX'))
 
-parser = argparse.ArgumentParser(usage="tasks [option] arg1 arg2 arg3", prog="myTasks v0.3")
+parser = argparse.ArgumentParser(usage="tasks [option] arg1 arg2 arg3", 
+	prog="myTasks v0.3")
 
-parser.add_argument('-l', dest="tList", action='store', nargs="*", help='Lists tasks. For a sinlge list, pass the list name.')
+parser.add_argument('-l', dest="tList", action='store', nargs="*", 
+	help='Lists tasks. For a sinlge list, pass the list name.')
 
-parser.add_argument('-n', dest="new", help='Adds new task. Pass the name of the task list and the new task as arguments in double quotes. For example: tasks -n Main "Add this task to the Main list."', action='store', metavar='<ListName> <"Task"> <YYYY-MM-DD>', nargs="*")
+parser.add_argument('-n', dest="new", help='Adds new task. Pass the name of the task list and the \
+	new task as arguments in double quotes. For example: tasks -n Main "Add this task to the Main list."', 
+	action='store', metavar='<ListName> <"Task"> <YYYY-MM-DD>', nargs="*")
 
-parser.add_argument('-c', dest="clear", action='store_true', default=False, help='Clears completed tasks from your lists. Takes no arguments.')
+parser.add_argument('-c', dest="clear", action='store_true', default=False, 
+	help='Clears completed tasks from your lists. Takes no arguments.')
 
-parser.add_argument('-u', dest="update", help='Updates a designated task as completed. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -u Main 1. This command would mark the first message on the Main list as completed.', action='store', metavar='<ListName> <TaskNumber>', nargs="*")
+parser.add_argument('-u', dest="update", help='Updates a designated task as completed. Pass the \
+	name of the list and the number of the task. The number is available by first listing tasks \
+	with the -l command. For example: tasks -u Main 1. This command would mark the first message \
+	on the Main list as completed.', action='store', metavar='<ListName> <TaskNumber>', nargs="*")
 
-parser.add_argument('-d', dest="delTask", help='Deletes a designated task. Pass the name of the list and the number of the task. The number is available by first listing tasks with the -l command. For example: tasks -d Main 1. This command would delete the first message from the Main list.', action='store', metavar='<ListName> <TaskNumber>', nargs="*")
+parser.add_argument('-d', dest="delTask", help='Deletes a designated task. Pass the name of the list and the \
+	number of the task. The number is available by first listing tasks with the -l command. \
+	For example: tasks -d Main 1. This command would delete the first message from the Main list.', 
+	action='store', metavar='<ListName> <TaskNumber>', nargs="*")
 
-parser.add_argument('-R', dest="newList", help='Renames a task list. Pass the old list name and the new list name. For example: tasks -R Main Home. This command would rename the Main list as the Home list.', action='store', metavar='<old ListName> <new ListName>', nargs=2)
+parser.add_argument('-R', dest="newList", help='Renames a task list. Pass the old list name and the \
+	new list name. For example: tasks -R Main Home. This command would rename the Main list as the Home \
+	list.', action='store', metavar='<old ListName> <new ListName>', nargs=2)
 
-parser.add_argument('-D', dest="delList", help='Delete a task list. Pass the targeted list name. For example: tasks -D Main. This command woudl delete the Main task list.', action='store', metavar='<target listName>', nargs=1)
+parser.add_argument('-D', dest="delList", help='Delete a task list. Pass the targeted list name. \
+	For example: tasks -D Main. This command would delete the Main task list.', action='store', 
+	metavar='<target listName>', nargs=1)
 
 
 tasklists = service.tasklists().list().execute()
