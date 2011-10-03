@@ -16,35 +16,28 @@ from oauth2client.file import Storage
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.tools import run
 
-today = datetime.date.today()
+def today():
+	return todayDate.isoformat()
 
-weekdays = {'mon':0, 'tue':1, 'wed':2, 'thu':3, 'fri':4, 'sat':5, 'sun':6, 'monday' : 0, 'tuesday':1, 'wednesday':2,'thursday':3, 'friday':4, 'saturday':5, 'sunday':6 }
+def tomorrow():
+	return (todayDate + datetime.timedelta(days=1)).isoformat()
 
+def nextWeek():
+	return (todayDate + datetime.timedelta(days=7)).isoformat()
 
-def today(today):
-	return today
-
-def tomorrow(today):
-	return today + datetime.timedelta(days=1)
-
-def nextWeek(today):
-	today + datetime.timedelta(days=7)
-
-def nextMonth(today):
-	return today + datetime.timedelta(days=30)	
+def nextMonth():
+	return (todayDate + datetime.timedelta(days=30)).isoformat()	
 
 def dueDate(due):
-	today = datetime.date.today()
 	due = due.lower()
-	print today.isoweekday()
 	if weekdays.has_key(due) and weekdays[due] > today.isoweekday(): 
 		diff = today.isoweekday() - weekdays[due]
-		dueDate = (today + datetime.timedelta(diff)).isoformat()
-	elif weekdays.has_key(due) and weekdays[due] <= today.isoweekday():
-		diff = 6 - today.isoweekday()
-		dueDate = (today + datetime.timedelta(diff)).isoformat()
-	elif due in relDays:
-		dueDate = due(today).isoformat()
+		dueDate = (todayDate + datetime.timedelta(diff)).isoformat()
+	elif weekdays.has_key(due) and weekdays[due] <= todayDate.isoweekday():
+		diff = 6 - todayDate.isoweekday()
+		dueDate = (todayDate + datetime.timedelta(diff)).isoformat()
+	elif relDays.has_key(due):	    
+		dueDate = relDays[due]()
 	else: 
 		dueDate = due
 	return dueDate+'T12:00:00.000Z'
@@ -109,6 +102,18 @@ def newTask(opts, tasklists):
 	listName = opts[0]
 #	dueDate = ''
 	if len(opts) > 2:
+#		if opts[2] == 'today':
+#			dueDate = today.strftime('%Y-%m-%d')
+#		elif opts[2] == 'tomorrow':
+#			dueDate = tomorrow.strftime('%Y-%m-%d')
+#		elif opts[2] == 'next week':
+#			dueDate = nextWeek.strftime('%Y-%m-%d')
+#		elif opts[2] == '2 weeks':
+#			dueDate = twoWeeks.strftime('%Y-%m-%d')
+#		elif opts[2] == 'next month':
+#			dueDate = nextMonth.strftime('%Y-%m-%d')
+#		else: dueDate = opts[2]
+#		convertDue = dueDate+'T12:00:00.000Z'
 		convertDue = dueDate(opts[2])
 		task = {
 	 		'title': opts[1], 
@@ -172,7 +177,11 @@ def updateTask(opts, tasklists):
 	print "Completed"
 
 
-relDays = [today, tomorrow, nextWeek, nextMonth]
+relDays = {'today':today, 'tomorrow':tomorrow, 'nextWeek': nextWeek, 'nextMonth':nextMonth}
+
+weekdays = {'mon':0, 'tue':1, 'wed':2, 'thu':3, 'fri':4, 'sat':5, 'sun':6, 'monday' : 0, 'tuesday':1, 'wednesday':2,'thursday':3, 'friday':4, 'saturday':5, 'sunday':6 }
+
+todayDate = datetime.date.today()
 
 FLAGS = gflags.FLAGS
 
