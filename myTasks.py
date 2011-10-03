@@ -31,7 +31,7 @@ def nextMonth():
 def dueDate(due):
 	due = due.lower()
 	if weekdays.has_key(due) and weekdays[due] > todayDate.isoweekday(): 
-		diff = todayDate.isoweekday() - weekdays[due]
+		diff = weekdays[due] - todayDate.isoweekday()
 		dueDate = (todayDate + datetime.timedelta(diff)).isoformat()
 	elif weekdays.has_key(due) and weekdays[due] <= todayDate.isoweekday():
 		diff = 6 - todayDate.isoweekday()
