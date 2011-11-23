@@ -49,6 +49,7 @@ def tasks(listID):
 		for task in tasks['items']:
 			if task['title'] == '': pass
 			else:
+				taskName=tasks['title']
 				dueDate='No date.'
 				if 'due' in task: 
 					fullDueDate=str(task['due'])
@@ -56,11 +57,11 @@ def tasks(listID):
 				
 				if 'parent' in task.keys():
 					task['taskNum'] = n					
-					print '       '+str(task['taskNum'])+'. '+task['title']+' : '+dueDate
+					print '       '+str(task['taskNum'])+'. '+taskName.encode('utf-8', 'ignore')+' : '+dueDate
 					n+=1
 				else: 
 					task['taskNum'] = n
-					print '    '+str(n)+'. '+task['title']+' : '+dueDate
+					print '    '+str(n)+'. '+taskName.encode('utf-8', 'ignore')+' : '+dueDate
 					n += 1
 	except KeyError: print '    No tasks.'
 
