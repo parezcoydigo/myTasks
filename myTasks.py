@@ -57,11 +57,11 @@ def tasks(listID):
 				
 				if 'parent' in task.keys():
 					task['taskNum'] = n					
-					print '       '+str(task['taskNum'])+'. '+taskName.encode('utf-8', 'ignore')+' : '+dueDate
+					print '       '+str(task['taskNum'])+'. '+task['title'].encode('utf-8', 'ignore')+' : '+dueDate
 					n+=1
 				else: 
 					task['taskNum'] = n
-					print '    '+str(n)+'. '+taskName.encode('utf-8', 'ignore')+' : '+dueDate
+					print '    '+str(n)+'. '+task['title'].encode('utf-8', 'ignore')+' : '+dueDate
 					n += 1
 	except KeyError: print '    No tasks.'
 
