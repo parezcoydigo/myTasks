@@ -49,7 +49,7 @@ def tasks(listID):
 		for task in tasks['items']:
 			if task['title'] == '': pass
 			else:
-				taskName=tasks['title']
+				taskName=task['title']
 				dueDate='No date.'
 				if 'due' in task: 
 					fullDueDate=str(task['due'])
